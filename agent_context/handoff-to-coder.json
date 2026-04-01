@@ -1,0 +1,19 @@
+{
+  "from": "e2e-interpreter",
+  "to": "coder",
+  "status": "pending",
+  "feature": "features/agent-coordination.feature",
+  "summary": "Acceptance tests written for all 6 Gherkin scenarios plus a handoff validation test. Tests are currently RED — they fail to compile because Handoff.Validate() does not exist yet. The Coder must implement a Validate() method on the Handoff struct in internal/handoff/handoff.go that returns an error when From, To, Status, or Feature fields are empty. Once Validate is implemented, all 7 tests should pass (GREEN).",
+  "artifacts": [
+    "features/agent-coordination.feature",
+    "internal/acceptance/agent_coordination_test.go",
+    "internal/gherkin/model.go",
+    "internal/gherkin/parser.go",
+    "internal/runner/registry.go",
+    "internal/runner/executor.go",
+    "internal/runner/result.go",
+    "internal/handoff/handoff.go"
+  ],
+  "instructions": "Acceptance tests in internal/acceptance/agent_coordination_test.go are RED. They call h.Validate() on handoff.Handoff which does not exist. Implement Validate() error method on the Handoff struct in internal/handoff/handoff.go. It should return an error if From, To, Status, or Feature are empty strings. Follow TDD: write a unit test first in internal/handoff/handoff_test.go for Validate, then implement. Run mutation testing afterward. All tests must be green before marking complete.",
+  "timestamp": "2026-04-01T12:20:00Z"
+}

@@ -1,0 +1,19 @@
+{
+  "from": "architect",
+  "to": "e2e-interpreter",
+  "status": "pending",
+  "feature": "features/agent-coordination.feature",
+  "summary": "Agent Coordination Workflow - 6 scenarios covering: architect handoff, E2E test generation, coder TDD cycle, parser verification, registry matching, and executor results",
+  "artifacts": [
+    "features/agent-coordination.feature",
+    "internal/gherkin/model.go",
+    "internal/gherkin/parser.go",
+    "internal/runner/registry.go",
+    "internal/runner/executor.go",
+    "internal/runner/result.go",
+    "internal/handoff/handoff.go",
+    "cmd/gherkin-runner/main.go"
+  ],
+  "instructions": "Read the feature file at features/agent-coordination.feature. It contains 6 scenarios describing the agent coordination workflow. Your job is to write executable Go acceptance tests that implement these scenarios as step definitions. Create the tests in internal/acceptance/agent_coordination_test.go. Each Gherkin step should map to a step definition function. The tests should use the gherkin parser, runner registry, executor, and handoff packages already built in internal/. After writing the acceptance tests, verify they compile and run (they should fail since not all production code is in place). Then create agent_context/handoff-to-coder.json and notify the Coder agent to begin TDD.",
+  "timestamp": "2026-04-01T12:00:00Z"
+}
