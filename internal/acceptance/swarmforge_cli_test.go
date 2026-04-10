@@ -221,12 +221,19 @@ func TestCLI_StartKillsExistingSession(t *testing.T) {
 	// Given a tmux session named "swarmforge" already exists
 	cmd := NewRecordingCommander()
 	cmd.Sessions["swarmforge"] = true
+	fs := NewFakeFS()
+	fs.Files["/project/Contitution.md"] = []byte("constitution")
+	var stdout bytes.Buffer
 
 	// When the start sequence runs
 	cfg := start.Config{
-		Commander:   cmd,
-		Session:     "swarmforge",
-		ProjectRoot: "/project",
+		Commander:        cmd,
+		Session:          "swarmforge",
+		ProjectRoot:      "/project",
+		FS:               fs,
+		LookPath:         func(name string) (string, error) { return "/usr/bin/" + name, nil },
+		ConstitutionPath: "Contitution.md",
+		Stdout:           &stdout,
 	}
 	err := start.Run(cfg)
 	if err != nil {

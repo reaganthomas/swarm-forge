@@ -2,15 +2,21 @@
   "from": "architect",
   "to": "e2e-interpreter",
   "status": "pending",
-  "feature": "features/swarmforge-cli.feature",
-  "summary": "SwarmForge CLI - 14 Gherkin scenarios covering Go CLI replacement for bash scripts. Scenarios test: preflight checks, directory setup, helper script generation, agent prompt building, tmux session creation, agent launching, metrics pane, notify subcommand, log subcommand, CLI dispatch, and startup banner.",
+  "feature": "features/swarmforge-integration.feature",
+  "summary": "Integration tests for SwarmForge CLI - 8 scenarios that force wiring all components together. The key gap: start.Run() only does tmux session creation but does NOT call preflight, setup, banner, prompt generation, agent launching, or metrics pane initialization. There is no real Commander implementation and no cmd/swarmforge/main.go.",
   "artifacts": [
-    "features/swarmforge-cli.feature",
-    "swarmforge.sh",
-    "notify-agent.sh",
-    "swarm-log.sh",
-    "Contitution.md"
+    "features/swarmforge-integration.feature",
+    "internal/start/start.go",
+    "internal/tmux/tmux.go",
+    "internal/cli/cli.go",
+    "internal/setup/setup.go",
+    "internal/prompt/prompt.go",
+    "internal/prompt/roles.go",
+    "internal/preflight/preflight.go",
+    "internal/banner/banner.go",
+    "internal/swarmlog/swarmlog.go",
+    "internal/notify/notify.go"
   ],
-  "instructions": "Read features/swarmforge-cli.feature (14 scenarios). Write executable Go acceptance tests in internal/acceptance/swarmforge_cli_test.go. The tests should verify the behavior described in each scenario using testable interfaces (not real tmux). Key architecture decisions for your tests:\n\n1. INTERFACES TO DEFINE (in test file or in new packages as needed):\n   - tmux.Commander interface: Run(args ...string) error, HasSession(name string) bool\n   - setup.FS interface: MkdirAll(path, perm), WriteFile(path, data, perm), ReadFile(path), Stat(path)\n   - preflight.LookPath function type: func(name string) (string, error)\n   - Use recording stubs (RecordingCommander, FakeFS) to verify correct calls without real tmux/filesystem\n\n2. PACKAGES BEING TESTED (not yet implemented - tests should be RED):\n   - internal/preflight - Check(lookPath, deps...) error\n   - internal/setup - EnsureDirs(fs, root) error, WriteHelperScripts(fs, root) error\n   - internal/banner - Print(w io.Writer)\n   - internal/prompt - Build(cfg AgentConfig, constitution string) string\n   - internal/prompt - roles.go has ArchitectInstructions, CoderInstructions, E2EInterpreterInstructions constants\n   - internal/tmux - CreateSession(cmd, session, window), SplitGrid(cmd, session, window), SetPaneTitles(cmd, session, window), LaunchAgent(cmd, session, pane, name, promptFile, projectRoot)\n   - internal/swarmlog - Logger with Write(role, message) method\n   - internal/notify - Notify(cmd Commander, logger Logger, session, pane, message) error\n   - internal/cli - Dispatch(args, config) error\n   - internal/start - Run(config) error\n\n3. REFERENCE the existing swarmforge.sh to understand exact tmux commands, pane layout, and claude launch commands.\n\n4. After writing acceptance tests, create agent_context/handoff-to-coder.json and notify pane 2.\n\nThe tests MUST compile but FAIL (RED) since production code doesn't exist yet.",
-  "timestamp": "2026-04-10T12:00:00Z"
+  "instructions": "Read features/swarmforge-integration.feature (8 scenarios). Write acceptance tests in internal/acceptance/swarmforge_integration_test.go. These tests MUST force the following changes to be made by the Coder:\n\n1. EXPAND start.Config to include: FS (setup.FS), LookPath (preflight.LookPathFunc), ConstitutionPath (string), Stdout (io.Writer)\n\n2. EXPAND start.Run() to call the FULL sequence:\n   a. preflight.Check(cfg.LookPath, 'tmux', 'claude', 'watch')\n   b. setup.EnsureDirs(cfg.FS, cfg.ProjectRoot)\n   c. setup.WriteHelperScripts(cfg.FS, cfg.ProjectRoot)\n   d. Read constitution file via cfg.FS.ReadFile(cfg.ConstitutionPath)\n   e. banner.Print(cfg.Stdout)\n   f. Kill existing session if present\n   g. Create tmux session + split grid + set pane titles\n   h. Generate 3 agent prompts via prompt.Build() and write them to temp files via cfg.FS.WriteFile\n   i. Launch 3 agents via tmux.LaunchAgent() in panes 0, 1, 2\n   j. Initialize metrics pane 3 with tail -f command\n\n3. CREATE a real Commander implementation (e.g. tmux.ExecCommander) that wraps os/exec.Command('tmux', args...)\n\n4. CREATE cmd/swarmforge/main.go that:\n   - Creates a real Commander, real FS, real LookPath\n   - Wires cli.Dispatch with handler functions that call start.Run, notify.Notify, swarmlog.Write\n   - Builds successfully with 'go build ./cmd/swarmforge/'\n\nYour acceptance tests should use RecordingCommander and FakeFS stubs (reuse or extend from existing tests) to verify the EXACT sequence of calls. The critical test is Scenario 1 which verifies the complete startup sequence.\n\nAfter writing tests, create agent_context/handoff-to-coder.json and notify pane 2.",
+  "timestamp": "2026-04-10T14:00:00Z"
 }
