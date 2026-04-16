@@ -13,3 +13,9 @@
                   (update a conj b)
                   (update b conj a)))
             empty-map edges)))
+
+(defn neighbors [cave-map room]
+  (get cave-map room))
+
+(defn adjacent? [cave-map room1 room2]
+  (contains? (get cave-map room1) room2))
