@@ -18,7 +18,7 @@ SwarmForge is a lightweight, tmux-based orchestration layer that:
 
 - Launches a **config-driven swarm** from a project-local `swarmforge.conf`
 - Creates one tmux session and one Terminal window per configured role
-- Reads behavior from project-local `roles/<role>.prompt` files
+- Reads behavior from project-local `roles/<role>.prompt` files plus `roles/constitution.prompt`
 - Supports per-role backends such as `claude`, `codex`, or `none`
 - Generates helper scripts in the working directory for logging, notification, and cleanup
 - Keeps all swarm state local to the working directory in `.swarmforge/`
@@ -34,7 +34,7 @@ SwarmForge is a lightweight, tmux-based orchestration layer that:
 ## How It Works (High Level)
 
 1. Create `swarmforge.conf` in the target working directory.
-2. Create a `roles/` directory beside it with one `<role>.prompt` file per configured role.
+2. Create a `roles/` directory beside it with `constitution.prompt` plus one `<role>.prompt` file per configured role.
 3. Run `./swarmforge.sh <working-directory>` or run it from inside that directory.
 4. SwarmForge creates tmux sessions, opens Terminal windows, and launches each configured backend.
 5. Roles communicate through `./notify-agent.sh <role-or-index> "message"` and log via `./swarm-log.sh`.
@@ -72,13 +72,16 @@ window e2e codex
 window logger none
 EOF
 mkdir roles
+cat > roles/constitution.prompt <<'EOF'
+Read this constitution and obey it on every task.
+EOF
 cat > roles/architect.prompt <<'EOF'
-You are the architect. Read Contitution.md and follow it.
+You are the architect. Read roles/constitution.prompt and follow it.
 EOF
 cat > roles/coder.prompt <<'EOF'
-You are the coder. Read Contitution.md and follow it.
+You are the coder. Read roles/constitution.prompt and follow it.
 EOF
 cat > roles/e2e.prompt <<'EOF'
-You are the e2e role. Read Contitution.md and follow it.
+You are the e2e role. Read roles/constitution.prompt and follow it.
 EOF
 /path/to/swarm-forge/swarmforge.sh .

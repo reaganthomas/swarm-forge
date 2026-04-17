@@ -14,6 +14,7 @@ WORKING_DIR="${1:-$PWD}"
 WORKING_DIR="$(cd "$WORKING_DIR" && pwd)"
 CONFIG_FILE="$WORKING_DIR/swarmforge.conf"
 ROLES_DIR="$WORKING_DIR/roles"
+CONSTITUTION_FILE="$ROLES_DIR/constitution.prompt"
 STATE_DIR="$WORKING_DIR/.swarmforge"
 WINDOW_IDS_FILE="$STATE_DIR/window-ids"
 SESSIONS_FILE="$STATE_DIR/sessions.tsv"
@@ -71,6 +72,11 @@ session_name_for_role() {
 parse_config() {
   if [[ ! -f "$CONFIG_FILE" ]]; then
     echo -e "${RED}Error:${RESET} Config not found at $CONFIG_FILE"
+    exit 1
+  fi
+
+  if [[ ! -f "$CONSTITUTION_FILE" ]]; then
+    echo -e "${RED}Error:${RESET} Constitution prompt not found at $CONSTITUTION_FILE"
     exit 1
   fi
 
@@ -259,6 +265,7 @@ write_agent_instruction_file() {
   local prompt_file="$2"
 
   cat > "$prompt_file" <<EOF
+Read roles/constitution.prompt and obey it.
 Read roles/${role}.prompt and follow it.
 EOF
 }
