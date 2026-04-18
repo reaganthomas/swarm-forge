@@ -18,7 +18,7 @@ SwarmForge is a lightweight, tmux-based orchestration layer that:
 
 - Launches a **config-driven swarm** from a project-local `swarmforge/swarmforge.conf`
 - Creates one tmux session and one Terminal window per configured role
-- Reads behavior from project-local `swarmforge/<role>.prompt` files plus `swarmforge/constitution.prompt`
+- Reads behavior from project-local `swarmforge/<role>.prompt` files plus a layered `swarmforge/constitution.prompt`
 - Supports per-role backends such as `claude`, `codex`, or `none`
 - Creates a project-local `swarmtools/` directory with notification helpers for the active swarm
 - Creates one git worktree per configured role under `.worktrees/`
@@ -29,14 +29,42 @@ SwarmForge is a lightweight, tmux-based orchestration layer that:
 
 - **Config-Driven Topology** — The swarm shape comes from `swarmforge/swarmforge.conf`, not hardcoded shell variables.
 - **Project-Local Roles** — Each role is defined by `swarmforge/<role>.prompt` in the working tree being orchestrated.
+- **Layered Constitution** — `swarmforge/constitution.prompt` can delegate to subordinate files such as `swarmforge/constitution/project.prompt`, `engineering.prompt`, and `workflow.prompt`.
 - **Backend Selection Per Role** — A role can launch `claude`, `codex`, or no agent at all.
 - **Observable Swarm** — Open one Terminal window per role and watch the sessions in real time.
 - **Self-Hosted & Lightweight** — Runs locally in tmux and Terminal with minimal machinery.
 
+## Constitution And Roles
+
+The recommended prompt layout is:
+
+```text
+swarmforge/
+  swarmforge.conf
+  constitution.prompt
+  constitution/
+    project.prompt
+    engineering.prompt
+    workflow.prompt
+  architect.prompt
+  coder.prompt
+  reviewer.prompt
+```
+
+`constitution.prompt` is the entry point. It can define precedence and direct agents to read subordinate constitution files in order. That lets you separate project-specific rules from engineering rules and workflow rules without forcing everything into one large prompt.
+
+The default three-agent workflow is:
+
+- `architect` defines behavior, plans, and acceptance-level intent
+- `coder` implements one small slice at a time and hands off completed work
+- `reviewer` performs deeper verification and quality checks before final handoff
+
+`logger` remains an optional utility role with no agent backend.
+
 ## How It Works (High Level)
 
 1. Create a `swarmforge/` directory in the target working directory.
-2. Put `swarmforge.conf`, `constitution.prompt`, and one `<role>.prompt` file per configured role inside it.
+2. Put `swarmforge.conf`, `constitution.prompt`, and one `<role>.prompt` file per configured role inside it. If needed, add subordinate files under `swarmforge/constitution/`.
 3. Define each window as `window <role> <agent> <worktree>`.
 4. Add `swarmforge.sh` to your shell `PATH` before startup.
 5. Run `swarmforge.sh <working-directory>` or run it from inside that directory.
@@ -46,12 +74,30 @@ SwarmForge is a lightweight, tmux-based orchestration layer that:
 9. SwarmForge creates tmux sessions, opens Terminal windows, and launches each configured backend in its assigned worktree.
 10. Roles communicate through helper commands such as `notify-agent.sh` and `swarmlog.sh`.
 
+## The `swarmforge.conf` File
+
+`swarmforge/swarmforge.conf` defines the swarm window-by-window. Each line has this form:
+
+```conf
+window <role> <agent> <worktree>
+```
+
+You can define as many windows as your project needs. Each `role` maps to a corresponding prompt file at `swarmforge/<role>.prompt`, so a config containing `architect`, `coder`, `reviewer`, `research`, and `release` windows would expect:
+
+- `swarmforge/architect.prompt`
+- `swarmforge/coder.prompt`
+- `swarmforge/reviewer.prompt`
+- `swarmforge/research.prompt`
+- `swarmforge/release.prompt`
+
+This lets each project choose its own swarm shape instead of being locked to a fixed set of roles. The only special case is a utility role such as `logger` using the `none` backend, which opens a window without launching an agent.
+
 Example config:
 
 ```conf
-window architect claude architect
+window architect claude master
 window coder codex coder
-window e2e codex e2e
+window reviewer codex reviewer
 window logger none none
 ```
 
@@ -59,9 +105,9 @@ window logger none none
 
 In the example above, the agents run in these worktrees:
 
-- `architect` -> `.worktrees/architect`
+- `architect` -> main working directory on `master`
 - `coder` -> `.worktrees/coder`
-- `e2e` -> `.worktrees/e2e`
+- `reviewer` -> `.worktrees/reviewer`
 - `logger` -> main working directory
 
 If a window uses `master` as its worktree name, SwarmForge does not create `.worktrees/master`; that role runs in the main working directory on the `master` branch.
@@ -70,6 +116,14 @@ The launcher expects these helper scripts to exist beside `swarmforge.sh`:
 
 - `swarmlog.sh`
 - `swarm-cleanup.sh`
+
+## Examples
+
+The repository includes example swarm definitions under `examples/`.
+
+- `examples/clojureHTW/swarmforge/` shows a layered constitution and agent prompts for a Clojure Hunt The Wumpus project.
+
+Use these example directories as starting points for project-local `swarmforge/` folders.
 
 ## Who Is SwarmForge For?
 
@@ -89,13 +143,28 @@ mkdir my-project
 cd my-project
 mkdir swarmforge
 cat > swarmforge/swarmforge.conf <<'EOF'
-window architect claude architect
+window architect claude master
 window coder codex coder
-window e2e codex e2e
+window reviewer codex reviewer
 window logger none none
 EOF
 cat > swarmforge/constitution.prompt <<'EOF'
-Read this constitution and obey it on every task.
+This file takes precedence over subordinate files.
+Read and obey the following subordinate documents in order.
+
+1. `swarmforge/constitution/project.prompt`
+2. `swarmforge/constitution/engineering.prompt`
+3. `swarmforge/constitution/workflow.prompt`
+EOF
+mkdir -p swarmforge/constitution
+cat > swarmforge/constitution/project.prompt <<'EOF'
+Add project-specific rules here.
+EOF
+cat > swarmforge/constitution/engineering.prompt <<'EOF'
+Add engineering rules here.
+EOF
+cat > swarmforge/constitution/workflow.prompt <<'EOF'
+Add workflow and handoff rules here.
 EOF
 cat > swarmforge/architect.prompt <<'EOF'
 You are the architect. Read swarmforge/constitution.prompt and follow it.
@@ -103,8 +172,8 @@ EOF
 cat > swarmforge/coder.prompt <<'EOF'
 You are the coder. Read swarmforge/constitution.prompt and follow it.
 EOF
-cat > swarmforge/e2e.prompt <<'EOF'
-You are the e2e role. Read swarmforge/constitution.prompt and follow it.
+cat > swarmforge/reviewer.prompt <<'EOF'
+You are the reviewer. Read swarmforge/constitution.prompt and follow it.
 EOF
 swarmforge.sh .
 

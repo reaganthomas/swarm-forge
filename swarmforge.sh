@@ -102,14 +102,7 @@ display_name_for_role() {
 
   parts=(${=normalized})
   for part in "${parts[@]}"; do
-    case "${part:l}" in
-      e2e) part="E2E" ;;
-      tdd) part="TDD" ;;
-      qa) part="QA" ;;
-      ui) part="UI" ;;
-      api) part="API" ;;
-      *) part="${(C)part}" ;;
-    esac
+    part="${(C)part}"
     if [[ -n "$label" ]]; then
       label+=" "
     fi
