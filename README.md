@@ -112,7 +112,7 @@ If a window uses `master` as its worktree name, SwarmForge does not create `.wor
 
 The repository includes example swarm definitions under `examples/`.
 
-- `examples/clojureHTW/swarmforge/` shows a layered constitution and agent prompts for a Clojure Hunt The Wumpus project.
+- `examples/clojureHTW/swarmforge/` shows a layered constitution and agent prompts for a Clojure Hunt The Wumpus project, including a queueing rule for messages that arrive while an agent is busy.
 
 Use these example directories as starting points for project-local `swarmforge/` folders.
 

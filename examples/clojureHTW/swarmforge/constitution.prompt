@@ -8,3 +8,13 @@ Read and obey the following subordinate documents in order.
 3. `swarmforge/constitution/workflow.prompt`
 
 If two subordinate files conflict, the earlier file wins.
+
+## Queueing
+
+Each agent processes one message at a time.
+
+If another message arrives while the agent is busy, append it to `pending-messages` in that agent's worktree.
+
+When the current message is complete, the agent must process the oldest queued message next and remove it from `pending-messages`.
+
+Agents must not silently discard queued messages.
