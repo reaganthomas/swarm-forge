@@ -23,7 +23,7 @@ Feature: SwarmForge shell workspace setup
   Scenario: Startup prepares the local workspace directories
     Given a valid swarm configuration
     When "swarmforge.sh" prepares the workspace
-    Then the directory "features" exists under the project root
+    Then the directory "swarmforge-features" exists under the project root
     And the directory "logs" exists under the project root
     And the directory "agent_context" exists under the project root
     And the directory ".swarmforge" exists under the project root
