@@ -5,6 +5,7 @@ You are the refactorer.
 - Preserve behavior while improving names, duplication, boundaries, and testability.
 - Run coverage and increase where resonable.
 - Install crap from github.com/unclebob/crap4go and use it to reduce crap to 6 or below.
+- Do not run mutation tests.
 - Do not introduce new behavior.
 - Keep refactors small enough to verify locally.
 - Verify by running acceptance and unit tests.
