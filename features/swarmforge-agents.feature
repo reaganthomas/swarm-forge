@@ -74,6 +74,13 @@ Feature: SwarmForge shell agent launch
     Then "logs/agent_messages.log" receives a timestamped entry for that session
     And tmux sends the literal message text to pane "0.0"
 
+  Scenario: The notify helper finds shared sessions from a role worktree
+    Given ".swarmforge/sessions.tsv" contains session rows for "specifier" and "coder"
+    And the "specifier" role has a git worktree
+    When ".worktrees/specifier/notify-agent.sh" sends a message to "coder"
+    Then the message is sent to the coder session
+    And "logs/agent_messages.log" receives a timestamped entry for that session
+
   Scenario: The cleanup owner appends shutdown cleanup to its launch command
     Given a valid swarm configuration
     When "swarmforge.sh" chooses the cleanup owner

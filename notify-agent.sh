@@ -1,8 +1,28 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SESSIONS_FILE="$ROOT_DIR/.swarmforge/sessions.tsv"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+find_project_dir() {
+  local git_common_dir
+
+  if git_common_dir=$(git -C "$SCRIPT_DIR" rev-parse --git-common-dir 2>/dev/null); then
+    if [[ "$git_common_dir" != /* ]]; then
+      git_common_dir="$(cd "$SCRIPT_DIR/$git_common_dir" && pwd)"
+    fi
+    local project_dir="${git_common_dir:h}"
+    if [[ -f "$project_dir/.swarmforge/sessions.tsv" ]]; then
+      echo "$project_dir"
+      return 0
+    fi
+  fi
+
+  echo "$SCRIPT_DIR"
+}
+
+PROJECT_DIR="$(find_project_dir)"
+SESSIONS_FILE="$PROJECT_DIR/.swarmforge/sessions.tsv"
+LOG_FILE="$PROJECT_DIR/logs/agent_messages.log"
 
 if [[ $# -lt 2 ]]; then
   echo "Usage: ./notify-agent.sh <target-role-or-index> \"message\"" >&2
@@ -35,8 +55,8 @@ TARGET_SESSION=$(resolve_session "$1") || {
 
 MESSAGE="${*:2}"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-mkdir -p "$ROOT_DIR/logs"
-echo "[$TIMESTAMP] [$TARGET_SESSION] $MESSAGE" >> "$ROOT_DIR/logs/agent_messages.log"
+mkdir -p "$PROJECT_DIR/logs"
+echo "[$TIMESTAMP] [$TARGET_SESSION] $MESSAGE" >> "$LOG_FILE"
 tmux send-keys -t "${TARGET_SESSION}:0.0" -l -- "$MESSAGE"
 sleep 0.15
 tmux send-keys -t "${TARGET_SESSION}:0.0" C-m

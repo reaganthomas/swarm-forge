@@ -235,7 +235,26 @@ write_notify_script() {
 #!/usr/bin/env zsh
 set -euo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+find_project_dir() {
+  local git_common_dir
+
+  if git_common_dir=$(git -C "$SCRIPT_DIR" rev-parse --git-common-dir 2>/dev/null); then
+    if [[ "$git_common_dir" != /* ]]; then
+      git_common_dir="$(cd "$SCRIPT_DIR/$git_common_dir" && pwd)"
+    fi
+    local project_dir="${git_common_dir:h}"
+    if [[ -f "$project_dir/.swarmforge/sessions.tsv" ]]; then
+      echo "$project_dir"
+      return 0
+    fi
+  fi
+
+  echo "${SCRIPT_DIR:h}"
+}
+
+PROJECT_DIR="$(find_project_dir)"
 SESSIONS_FILE="$PROJECT_DIR/.swarmforge/sessions.tsv"
 LOG_FILE="$PROJECT_DIR/logs/agent_messages.log"
 
