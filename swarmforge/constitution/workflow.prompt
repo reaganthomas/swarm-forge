@@ -1,6 +1,7 @@
 # Workflow Rules
 
 - At startup, discover and remember the branch or worktree assigned to your role.
+- If your assigned worktree is `master`, work in the main project checkout on its current branch; do not expect or create a `.worktrees/<role>` directory for that role.
 - Work only in your assigned branch or worktree.
 - Use `notify-agent.sh` for handoffs between agents.
 - Every handoff must include the branch name, commit hash, what changed, and what was verified.
