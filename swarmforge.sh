@@ -95,6 +95,14 @@ has_command() {
   command -v "$1" &>/dev/null
 }
 
+remove_nonessential_clone_files() {
+  if [[ "${WORKING_DIR:t}" == "swarm-forge" ]]; then
+    return
+  fi
+
+  rm -rf "$WORKING_DIR/README.md" "$WORKING_DIR/SwarmForgeInitSpec.md" "$WORKING_DIR/examples"
+}
+
 display_name_for_role() {
   local role="$1"
   local normalized="${role//[-_]/ }"
@@ -420,6 +428,7 @@ choose_cleanup_owner() {
 
 check_dependency tmux
 check_dependency git
+remove_nonessential_clone_files
 initialize_git_repo
 parse_config
 check_backend_dependencies
