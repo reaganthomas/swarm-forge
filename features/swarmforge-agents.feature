@@ -75,7 +75,7 @@ Feature: SwarmForge shell agent launch
     And tmux sends the literal message text to pane "0.0"
 
   Scenario: The cleanup owner appends shutdown cleanup to its launch command
-    Given a valid swarm configuration with an active "architect" role
+    Given a valid swarm configuration
     When "swarmforge.sh" chooses the cleanup owner
-    Then the "architect" role becomes the cleanup owner when it has an agent backend
+    Then the first configured window becomes the cleanup owner
     And its launch command includes "swarm-cleanup.sh"

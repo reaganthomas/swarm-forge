@@ -88,23 +88,31 @@ You can define as many windows as your project needs. Each `role` maps to a corr
 
 This lets each project choose its own swarm shape instead of being locked to a fixed set of roles. The only special case is a utility role such as `logger` using the `none` backend, which opens a window without launching an agent.
 
+The first window in the config is the cleanup window. SwarmForge attaches shutdown cleanup to that window's launch command and falls back to that tmux session when Terminal automation is unavailable.
+
+When SwarmForge opens Terminal windows, it also starts a small window watchdog:
+
+- Closing a non-cleanup Terminal window reopens that window attached to the same tmux session.
+- Closing the cleanup Terminal window shuts down all configured tmux sessions and closes the remaining tracked Terminal windows.
+- The watchdog updates `.swarmforge/window-ids` when it reopens a window so shutdown cleanup still targets the current windows.
+
 Example config:
 
 ```conf
-window architect claude master
+window coordinator codex master
 window coder codex coder
-window reviewer codex reviewer
-window logger none none
+window refactorer codex refactorer
+window architect codex architect
 ```
 
 `logger` is a utility role. When configured with `none`, it tails `logs/agent_messages.log`.
 
 In the example above, the agents run in these worktrees:
 
-- `architect` -> main working directory on `master`
+- `coordinator` -> main working directory on `master`, and is the cleanup window because it is listed first
 - `coder` -> `.worktrees/coder`
-- `reviewer` -> `.worktrees/reviewer`
-- `logger` -> main working directory
+- `refactorer` -> `.worktrees/refactorer`
+- `architect` -> `.worktrees/architect`
 
 If a window uses `master` as its worktree name, SwarmForge does not create `.worktrees/master`; that role runs in the main working directory on the `master` branch.
 

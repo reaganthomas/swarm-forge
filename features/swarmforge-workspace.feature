@@ -80,6 +80,8 @@ Feature: SwarmForge shell workspace setup
     When "swarmforge.sh" finishes launching the swarm
     Then one Terminal window is opened for each session
     And the window ids are written to ".swarmforge/window-ids"
+    And non-cleanup windows are watched and reopened when closed
+    And closing the cleanup window kills the configured tmux sessions
 
   Scenario: Startup attaches to the cleanup-owner session when osascript is unavailable
     Given a valid swarm configuration

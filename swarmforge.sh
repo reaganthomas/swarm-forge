@@ -21,6 +21,8 @@ ROLES_DIR="$SWARM_FORGE_DIR"
 CONSTITUTION_FILE="$SWARM_FORGE_DIR/constitution.prompt"
 STATE_DIR="$WORKING_DIR/.swarmforge"
 WINDOW_IDS_FILE="$STATE_DIR/window-ids"
+WINDOW_STATE_FILE="$STATE_DIR/windows.tsv"
+WINDOW_WATCHDOG_LOG="$STATE_DIR/window-watchdog.log"
 SESSIONS_FILE="$STATE_DIR/sessions.tsv"
 PROMPTS_DIR="$STATE_DIR/prompts"
 
@@ -220,7 +222,7 @@ write_sessions_file() {
 
 check_helper_scripts() {
   local helper
-  for helper in swarm-cleanup.sh swarmlog.sh; do
+  for helper in swarm-cleanup.sh swarm-window-watchdog.sh swarmlog.sh; do
     if [[ ! -x "$SCRIPT_DIR/$helper" ]]; then
       echo -e "${RED}Error:${RESET} Required helper script not found or not executable: $SCRIPT_DIR/$helper"
       exit 1
@@ -394,17 +396,7 @@ EOF
 }
 
 choose_cleanup_owner() {
-  if [[ -n "${ROLE_INDEX[architect]:-}" && "${AGENTS[$((ROLE_INDEX[architect] + 1))]}" != "none" ]]; then
-    CLEANUP_OWNER_INDEX=$((ROLE_INDEX[architect] + 1))
-    return
-  fi
-
-  for (( i = 1; i <= ${#ROLES[@]}; i++ )); do
-    if [[ "${AGENTS[$i]}" != "none" ]]; then
-      CLEANUP_OWNER_INDEX=$i
-      return
-    fi
-  done
+  CLEANUP_OWNER_INDEX=1
 }
 
 check_dependency tmux
@@ -457,9 +449,21 @@ echo ""
 if has_command osascript; then
   echo -e "Opening separate Terminal windows for each session..."
   : > "$WINDOW_IDS_FILE"
+  : > "$WINDOW_STATE_FILE"
   for (( i = 1; i <= ${#ROLES[@]}; i++ )); do
-    open_terminal_window "${SESSIONS[$i]}" "SwarmForge ${DISPLAY_NAMES[$i]}" >> "$WINDOW_IDS_FILE"
+    window_id="$(open_terminal_window "${SESSIONS[$i]}" "SwarmForge ${DISPLAY_NAMES[$i]}")"
+    echo "$window_id" >> "$WINDOW_IDS_FILE"
+    printf '%s\t%s\t%s\t%s\n' \
+      "$i" \
+      "$window_id" \
+      "${SESSIONS[$i]}" \
+      "SwarmForge ${DISPLAY_NAMES[$i]}" >> "$WINDOW_STATE_FILE"
   done
+  nohup "$SCRIPT_DIR/swarm-window-watchdog.sh" \
+    "$WINDOW_STATE_FILE" \
+    "$WINDOW_IDS_FILE" \
+    "$CLEANUP_OWNER_INDEX" \
+    "$WORKING_DIR" > "$WINDOW_WATCHDOG_LOG" 2>&1 &
 else
   echo -e "${YELLOW}osascript not found; attaching current shell to '${SESSIONS[$CLEANUP_OWNER_INDEX]}' instead.${RESET}"
   tmux attach-session -t "${SESSIONS[$CLEANUP_OWNER_INDEX]}"
