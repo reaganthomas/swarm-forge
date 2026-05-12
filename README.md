@@ -131,13 +131,7 @@ Use these example directories as starting points for project-local `swarmforge/`
   ```sh
   curl -L https://github.com/unclebob/swarm-forge/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
   ```
+	
+## Running Swarmforge,
 
-  `curl -L` downloads the `main` branch archive from GitHub, and `tar -xz --strip-components=1` extracts the archive contents into the current directory without the top-level archive folder. This gives you the SwarmForge files without creating a `.git` directory or an `origin` remote.
-
-- Make `swarmforge.sh` executable.
-- Add the directory containing `swarmforge.sh` to your shell `PATH`.
-- Create or choose the project directory you want SwarmForge to manage.
-- Inside that project, create a `swarmforge/` directory.
-- Create `swarmforge/swarmforge.conf` and define the windows for your swarm.
-- Use the earlier `Constitution And Roles`, `How It Works`, and `The swarmforge.conf File` sections as the reference for the expected prompt layout, role files, and window definitions.
-- Type `swarmforge`.
+Just type swarmforge.  The windows should all pop up.  
