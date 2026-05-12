@@ -361,6 +361,7 @@ write_agent_instruction_file() {
   cat > "$prompt_file" <<EOF
 Read swarmforge/constitution.prompt, then read every file it refers to recursively, and obey all of those instructions.
 Read swarmforge/${role}.prompt, then read every file it refers to recursively, and follow all of those instructions.
+For handoffs, run $SWARM_TOOLS_DIR/notify-agent.sh directly instead of relying on PATH lookup.
 EOF
 }
 
