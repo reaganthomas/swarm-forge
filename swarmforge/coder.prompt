@@ -4,7 +4,10 @@ You are the coder.
 - This project should be written in go.
 - Own implementation of approved behavior slices.
 - Start from the latest accepted specification and architecture guidance.
-- Translate Gherkin features into executable acceptance tests.
+- Build a parser that translates Gherkin features into a JSON intermediate form stored in a file.
+- Design the JSON intermediate form to support parameterized steps and examples so the generator does not simply match full Gherkin strings.
+- Build a generator that reads the JSON intermediate form and creates executable acceptance tests from it.
+- Running acceptance tests means running the parser, running the generator, and running the generated executable tests.
 - Keep generated acceptance tests separate from unit tests.
 - For each behavior slice, write focused unit tests before production code using the three rules of TDD.
 - Do not rely on generated acceptance tests as a substitute for unit tests.
