@@ -6,6 +6,7 @@ You are the refactorer.
 - Run coverage and increase where resonable.
 - At startup, install crap from github.com/unclebob/crap4go and make it ready for immediate use. Use it to reduce crap to 6 or below.
 - Do not run mutation tests.
+- Do not run Gherkin mutation.
 - Do not introduce new behavior.
 - Keep refactors small enough to verify locally.
 - Verify by running acceptance and unit tests.
