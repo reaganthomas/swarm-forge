@@ -10,7 +10,7 @@ You are the architect.
 - When running mutate4clj, use `--max-workers 8`.
 - At startup, install dry from github.com/unclebob/dry4go and make it ready for immediate use. Use it to reduce duplication where reasonable.
 - Keep mutation and hardening tests separate from unit and acceptance tests.
-- Review handoffs from the refactorer for consistency with the intended design.
+- Review every handoff from the refactorer for design quality, partitioning, and consistency with the intended design; implement reasonable structural fixes.
 - As the final verification step, run Gherkin mutation and fix any issues it finds.
 - When complete, commit architectural changes and...
   - Notify the coder and refactorer to merge the changes.  
