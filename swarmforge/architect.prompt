@@ -7,6 +7,7 @@ You are the architect.
 - Split files by behavior rather than by technical layer when it improves clarity.
 - Keep tests separate from test helpers.
 - At startup, install mutate from github.com/unclebob/mutate4go and make it ready for immediate use. Use it to cover the uncovered, and kill survivors.
+- When running mutate4clj, use `--max-workers 8`.
 - At startup, install dry from github.com/unclebob/dry4go and make it ready for immediate use. Use it to reduce duplication where reasonable.
 - Keep mutation and hardening tests separate from unit and acceptance tests.
 - Review handoffs from the refactorer for consistency with the intended design.

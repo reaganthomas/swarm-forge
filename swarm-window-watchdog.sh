@@ -5,6 +5,9 @@ WINDOW_STATE_FILE="$1"
 WINDOW_IDS_FILE="$2"
 CLEANUP_OWNER_INDEX="$3"
 WORKING_DIR="$4"
+MISSING_THRESHOLD=3
+
+typeset -A MISSING_COUNTS=()
 
 window_exists() {
   local window_id="$1"
@@ -111,9 +114,16 @@ while [[ -f "$WINDOW_STATE_FILE" ]]; do
     exit 0
   fi
 
-  if ! window_exists "$cleanup_window_id"; then
-    kill_all_sessions
-    exit 0
+  if window_exists "$cleanup_window_id"; then
+    MISSING_COUNTS[$CLEANUP_OWNER_INDEX]=0
+  else
+    MISSING_COUNTS[$CLEANUP_OWNER_INDEX]=$(( ${MISSING_COUNTS[$CLEANUP_OWNER_INDEX]:-0} + 1 ))
+    if (( MISSING_COUNTS[$CLEANUP_OWNER_INDEX] >= MISSING_THRESHOLD )); then
+      kill_all_sessions
+      exit 0
+    fi
+    sleep 2
+    continue
   fi
 
   while IFS=$'\t' read -r index window_id session title || [[ -n "${index:-}" ]]; do
@@ -121,9 +131,14 @@ while [[ -f "$WINDOW_STATE_FILE" ]]; do
     [[ "$index" != "$CLEANUP_OWNER_INDEX" ]] || continue
     tmux has-session -t "$session" 2>/dev/null || continue
 
-    if ! window_exists "$window_id"; then
+    if window_exists "$window_id"; then
+      MISSING_COUNTS[$index]=0
+    else
+      MISSING_COUNTS[$index]=$(( ${MISSING_COUNTS[$index]:-0} + 1 ))
+      (( MISSING_COUNTS[$index] >= MISSING_THRESHOLD )) || continue
       new_window_id="$(open_terminal_window "$session" "$title")"
       rewrite_window_id "$index" "$new_window_id"
+      MISSING_COUNTS[$index]=0
     fi
   done < "$WINDOW_STATE_FILE"
 
