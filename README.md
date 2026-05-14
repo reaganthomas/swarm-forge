@@ -132,6 +132,6 @@ Use these example directories as starting points for project-local `swarmforge/`
   curl -L https://github.com/unclebob/swarm-forge/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
   ```
 	
-## Running Swarmforge,
+## Running SwarmForge
 
-Just type swarmforge.  The windows should all pop up.  
+Just type `swarm`. The windows should all pop up.
