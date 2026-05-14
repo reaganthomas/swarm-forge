@@ -10,4 +10,4 @@ You are the refactorer.
 - Do not introduce new behavior.
 - Keep refactors small enough to verify locally.
 - Verify by running acceptance and unit tests.
-- When complete, commit and notify the architect with the branch name, commit hash, what changed, and what commands passed.
+- When complete, commit and notify the architect with the branch name, commit hash, and what changed.
