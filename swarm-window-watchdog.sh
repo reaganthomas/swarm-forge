@@ -43,9 +43,16 @@ on run argv
   tell application "Terminal"
     activate
     set newTab to do script ""
+    set newWindow to missing value
+    try
+      set newWindow to first window whose tabs contains newTab
+    end try
+    if newWindow is missing value then
+      set newWindow to front window
+    end if
     do script "cd " & quoted form of workingDir & " && exec tmux attach-session -t " & quoted form of tmuxSession in newTab
     set custom title of newTab to windowTitle
-    return id of front window
+    return id of newWindow
   end tell
 end run
 APPLESCRIPT

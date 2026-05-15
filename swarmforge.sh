@@ -499,17 +499,24 @@ open_terminal_window() {
 
   local bounds_cmd=""
   if [[ -n "$left" ]]; then
-    bounds_cmd="set bounds of front window to {${left}, ${top}, ${right}, ${bottom}}"
+    bounds_cmd="set bounds of newWindow to {${left}, ${top}, ${right}, ${bottom}}"
   fi
 
   osascript <<EOF
 tell application "Terminal"
   activate
   set newTab to do script ""
+  set newWindow to missing value
+  try
+    set newWindow to first window whose tabs contains newTab
+  end try
+  if newWindow is missing value then
+    set newWindow to front window
+  end if
   do script "cd '$WORKING_DIR' && exec tmux attach-session -t '${session}'" in newTab
   set custom title of newTab to "${title}"
   ${bounds_cmd}
-  return id of front window
+  return id of newWindow
 end tell
 EOF
 }
